@@ -1,0 +1,5 @@
+typer
+torch
+torchaudio
+transformers
+ffmpeg-python
