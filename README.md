@@ -28,6 +28,7 @@ conda activate transcription
 6. Instalar dependências
 
 ```sh
+brew install ffmpeg
 pip install -r requirements.txt
 ```
 
