@@ -37,5 +37,31 @@ pip install -r requirements.txt
 A primeira vez demorará um pouco mais pois ele baixará os modelos necessários para a atividade
 
 ```sh
-python main.py /Users/filipelopes/Desktop/curcubita_pepo.m4a
+python whisper.py /Users/filipelopes/Desktop/curcubita_pepo.m4a
+```
+
+8. Gerar `.srt` a partir de vídeo ou áudio com Whisper
+
+O script abaixo aceita arquivos como `.mp4`, `.mov`, `.mkv`, `.m4a`, `.wav` e gera um arquivo `.srt`.
+
+```sh
+python whisper_srt.py /caminho/video.mp4
+```
+
+Se quiser definir o caminho de saída:
+
+```sh
+python whisper_srt.py /caminho/video.mp4 /caminho/saida.srt
+```
+
+Se quiser informar o idioma de origem:
+
+```sh
+python whisper_srt.py /caminho/video.mp4 --source-language pt
+```
+
+Se quiser traduzir mantendo os mesmos tempos, use o idioma de destino. Com Whisper, a tradução nativa é suportada apenas para inglês:
+
+```sh
+python whisper_srt.py /caminho/video.mp4 /caminho/video.en.srt --source-language pt --target-language en
 ```

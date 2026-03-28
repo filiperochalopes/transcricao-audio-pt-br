@@ -4,3 +4,4 @@ torchaudio
 transformers
 ffmpeg-python
 soundfile
+mlx-whisper
