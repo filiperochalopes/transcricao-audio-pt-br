@@ -1,7 +1,2 @@
-typer
-torch
-torchaudio
-transformers
-ffmpeg-python
-soundfile
 mlx-whisper
+typer

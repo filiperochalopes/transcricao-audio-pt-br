@@ -1,67 +1,132 @@
-### Transcrição de Áudio para Português utilizando ML em MacOS
+### Transcrição de Áudio/Vídeo com MLX Whisper no macOS
 
-1. Instalar Blackhole na máquina
+Este projeto usa `mlx-whisper`, não Faster Whisper. O backend foi pensado para Apple
+Silicon/MLX e funciona bem em scripts de terminal e em AppleScript/Automator.
+
+O comando aceita áudio e vídeo em formatos comuns (`.m4a`, `.mp3`, `.wav`, `.aac`,
+`.flac`, `.ogg`, `.mp4`, `.mov`, `.mkv`, `.webm` etc.) porque normaliza a entrada
+com `ffmpeg` antes de chamar o Whisper.
+
+## Pré-requisitos
+
+1. Instale `uv` e `ffmpeg`:
+
+```sh
+brew install uv ffmpeg
+```
+
+2. Se quiser gravar áudio interno do macOS, instale o BlackHole:
 
 ```sh
 brew install --cask blackhole-2ch
 ```
 
-2. Configurar MacOS em Ajustes > Configurações de Áudio e MIDI
+Depois configure um dispositivo de saída múltipla no app "Configuração de Áudio e
+MIDI" e grave com o QuickTime Player.
 
-Cadastrar Dispositivo com Saída Múltipla e colocar a saída normal para ouvir e a saída BlackHole
+## Instalação
 
-3. Utilizar o QuickTime Player para gravar
-
-4. Instalar conda
+Para usar de qualquer pasta, instale como ferramenta global do `uv`:
 
 ```sh
-brew install --cask miniforge
+cd /Users/filipelopes/Desktop/Development/transcribe-whisper
+uv tool install --reinstall .
 ```
 
-5. Criar ambiente python para a aplicação
+Isso cria o executável em `~/.local/bin/transcribe-whisper`. Se o shell não
+encontrar o comando, rode:
 
 ```sh
-conda create -n transcription python=3.12 -y
-conda activate transcription
+uv tool update-shell
 ```
 
-6. Instalar dependências
+Para desenvolvimento local do projeto, `uv` também cria e mantém a `.venv`
+automaticamente:
 
 ```sh
-brew install ffmpeg
-pip install -r requirements.txt
+uv sync
 ```
 
-7. Executar script
+## Uso
 
-A primeira vez demorará um pouco mais pois ele baixará os modelos necessários para a atividade
+Na primeira execução o modelo será baixado. O idioma padrão é `pt` e a CLI usa
+decoding mais conservador para reduzir repetição/hallucination em músicas.
+
+Transcrever para `.txt`:
 
 ```sh
-python whisper.py /Users/filipelopes/Desktop/curcubita_pepo.m4a
+transcribe-whisper text /caminho/audio.m4a
 ```
 
-8. Gerar `.srt` a partir de vídeo ou áudio com Whisper
-
-O script abaixo aceita arquivos como `.mp4`, `.mov`, `.mkv`, `.m4a`, `.wav` e gera um arquivo `.srt`.
+Escolher o arquivo de saída:
 
 ```sh
-python whisper_srt.py /caminho/video.mp4
+transcribe-whisper text /caminho/audio.m4a /caminho/saida.txt
 ```
 
-Se quiser definir o caminho de saída:
+Gerar `.srt`:
 
 ```sh
-python whisper_srt.py /caminho/video.mp4 /caminho/saida.srt
+transcribe-whisper srt /caminho/video.mp4
 ```
 
-Se quiser informar o idioma de origem:
+Informar idioma de origem:
 
 ```sh
-python whisper_srt.py /caminho/video.mp4 --source-language pt
+transcribe-whisper text /caminho/audio.m4a --source-language pt
 ```
 
-Se quiser traduzir mantendo os mesmos tempos, use o idioma de destino. Com Whisper, a tradução nativa é suportada apenas para inglês:
+Traduzir para inglês, mantendo tempos no `.srt`:
 
 ```sh
-python whisper_srt.py /caminho/video.mp4 /caminho/video.en.srt --source-language pt --target-language en
+transcribe-whisper srt /caminho/video.mp4 /caminho/video.en.srt --source-language pt --target-language en
+```
+
+Trocar modelo MLX:
+
+```sh
+transcribe-whisper text /caminho/audio.m4a --model mlx-community/whisper-small-mlx
+```
+
+Se o áudio for música e o modelo repetir palavras da introdução, mantenha o
+padrão `--no-condition-on-previous-text`. Para tentar uma transcrição mais
+contextual em fala contínua:
+
+```sh
+transcribe-whisper text /caminho/audio.m4a --condition-on-previous-text
+```
+
+Para pular uma introdução musical ou transcrever só um trecho:
+
+```sh
+transcribe-whisper text /caminho/audio.m4a --start-time 30
+transcribe-whisper text /caminho/audio.m4a --start-time 60 --duration 30
+```
+
+Se estiver dentro da pasta deste projeto, também pode usar:
+
+```sh
+uv run transcribe-whisper text /caminho/audio.m4a
+```
+
+## Uso simples em app scripts do macOS
+
+Use sempre o caminho absoluto do `uv` para não depender do `PATH` do Automator ou
+AppleScript:
+
+```sh
+/Users/filipelopes/.local/bin/transcribe-whisper text "$1"
+```
+
+Para SRT:
+
+```sh
+/Users/filipelopes/.local/bin/transcribe-whisper srt "$1"
+```
+
+Os scripts antigos ainda funcionam como atalhos:
+
+```sh
+uv run python whisper.py /caminho/audio.m4a
+uv run python whisper_srt.py /caminho/video.mp4
 ```
